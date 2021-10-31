@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportAnalyzer", "ImportAnalyzer\ImportAnalyzer\ImportAnalyzer.csproj", "{93A50D69-8E8B-445D-890D-C56D7A256675}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportAnalyzer.CodeFixes", "ImportAnalyzer\ImportAnalyzer.CodeFixes\ImportAnalyzer.CodeFixes.csproj", "{D12CF505-F3F6-492F-8150-46CC5F0EED06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportAnalyzer.Package", "ImportAnalyzer\ImportAnalyzer.Package\ImportAnalyzer.Package.csproj", "{CDB935F5-A4A0-44D2-B172-5E0633E2BE9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportAnalyzer.Test", "ImportAnalyzer\ImportAnalyzer.Test\ImportAnalyzer.Test.csproj", "{F851AC7A-8464-4C07-A640-941624771B85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportAnalyzer.Vsix", "ImportAnalyzer\ImportAnalyzer.Vsix\ImportAnalyzer.Vsix.csproj", "{BED63C49-8999-449F-96C4-BAA7AA0A4D88}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93A50D69-8E8B-445D-890D-C56D7A256675}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93A50D69-8E8B-445D-890D-C56D7A256675}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93A50D69-8E8B-445D-890D-C56D7A256675}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93A50D69-8E8B-445D-890D-C56D7A256675}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D12CF505-F3F6-492F-8150-46CC5F0EED06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D12CF505-F3F6-492F-8150-46CC5F0EED06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D12CF505-F3F6-492F-8150-46CC5F0EED06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D12CF505-F3F6-492F-8150-46CC5F0EED06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDB935F5-A4A0-44D2-B172-5E0633E2BE9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB935F5-A4A0-44D2-B172-5E0633E2BE9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB935F5-A4A0-44D2-B172-5E0633E2BE9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB935F5-A4A0-44D2-B172-5E0633E2BE9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F851AC7A-8464-4C07-A640-941624771B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F851AC7A-8464-4C07-A640-941624771B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F851AC7A-8464-4C07-A640-941624771B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F851AC7A-8464-4C07-A640-941624771B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BED63C49-8999-449F-96C4-BAA7AA0A4D88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BED63C49-8999-449F-96C4-BAA7AA0A4D88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BED63C49-8999-449F-96C4-BAA7AA0A4D88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BED63C49-8999-449F-96C4-BAA7AA0A4D88}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E4906D0B-0E78-41FB-A4C7-763CE98C7178}
+	EndGlobalSection
+EndGlobal
