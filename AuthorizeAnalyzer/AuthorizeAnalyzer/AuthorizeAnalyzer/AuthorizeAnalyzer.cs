@@ -11,7 +11,7 @@ using System.Threading;
 namespace AuthorizeAnalyzer
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class AuthorizeAnalyzerAnalyzer : DiagnosticAnalyzer
+    public class AuthorizeAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = "AuthorizeAnalyzer";
 
@@ -35,6 +35,7 @@ namespace AuthorizeAnalyzer
         private void HandleSyntaxTree(SyntaxTreeAnalysisContext context)
         {
             SyntaxNode root = context.Tree.GetCompilationUnitRoot(context.CancellationToken);
+            var descendantTrivia = root.DescendantTrivia();
             var commentNodes = root.DescendantTrivia().Where(x => x.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToList();
 
             if (!commentNodes.Any())
@@ -54,7 +55,6 @@ namespace AuthorizeAnalyzer
                 var diagnostic = Diagnostic.Create(Rule, node.GetLocation());
                 context.ReportDiagnostic(diagnostic);
             }
-
         }
     }
 }

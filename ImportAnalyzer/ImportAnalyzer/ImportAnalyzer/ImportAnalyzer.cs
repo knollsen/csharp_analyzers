@@ -42,7 +42,7 @@ namespace ImportAnalyzer
 
             var parent = usingDirective.Parent;
 
-            var namespaceDeclaration = (NamespaceDeclarationSyntax)parent.ChildNodes().SingleOrDefault(x => x is NamespaceDeclarationSyntax);
+            var namespaceDeclaration = (NamespaceDeclarationSyntax)parent.DescendantNodesAndSelf().SingleOrDefault(x => x is NamespaceDeclarationSyntax);
 
             if (namespaceDeclaration == null)
             {
@@ -53,7 +53,9 @@ namespace ImportAnalyzer
 
             if (importedNamespace.StartsWith(ownNamespace))
             {
-                var diagnostic = Diagnostic.Create(Rule, usingDirective.GetLocation(), usingDirective.ToString());
+                var location = usingDirective.GetLocation();
+
+                var diagnostic = Diagnostic.Create(Rule, location, usingDirective.ToString());
 
                 context.ReportDiagnostic(diagnostic);
             }
