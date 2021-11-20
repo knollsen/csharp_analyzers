@@ -36,7 +36,7 @@ namespace AuthorizeAnalyzer
         {
             SyntaxNode root = context.Tree.GetCompilationUnitRoot(context.CancellationToken);
             var descendantTrivia = root.DescendantTrivia();
-            var commentNodes = root.DescendantTrivia().Where(x => x.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToList();
+            var commentNodes = descendantTrivia.Where(x => x.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToList();
 
             if (!commentNodes.Any())
             {

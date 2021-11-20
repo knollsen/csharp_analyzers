@@ -12,20 +12,18 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace AuthorizeAnalyzer
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AuthorizeAnalyzerCodeFixProvider)), Shared]
     public class AuthorizeAnalyzerCodeFixProvider : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds
-        {
-            get { return ImmutableArray.Create(AuthorizeAnalyzer.DiagnosticId); }
-        }
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(AuthorizeAnalyzer.DiagnosticId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
 
@@ -33,9 +31,9 @@ namespace AuthorizeAnalyzer
         {
             var diagnostic = context.Diagnostics.First();
 
-            var trivia = await this.GetCommentAsync(context.Document, diagnostic, context.CancellationToken);
+            var nodeAndTrivia = await this.GetCommentAsync(context.Document, diagnostic, context.CancellationToken);
 
-            if (trivia == null)
+            if (nodeAndTrivia == null)
             {
                 return;
             }
@@ -44,43 +42,55 @@ namespace AuthorizeAnalyzer
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: CodeFixResources.CodeFixTitle,
-                    createChangedDocument: c => UncommentAsync(context.Document, trivia, c),
+                    createChangedDocument: c => UncommentAsync(context.Document, nodeAndTrivia.Value.Item1, nodeAndTrivia.Value.Item2, c),
                     equivalenceKey: nameof(CodeFixResources.CodeFixTitle)),
                 diagnostic);
         }
 
-        private async Task<SyntaxTrivia> GetCommentAsync(Document document, Diagnostic diagnostic, CancellationToken ct)
+        private async Task<(SyntaxNode, SyntaxTrivia)?> GetCommentAsync(Document document, Diagnostic diagnostic, CancellationToken ct)
         {
             var tree = await document.GetSyntaxTreeAsync(ct).ConfigureAwait(false);
 
-            var diagnosticSpan = diagnostic.Location;
+            var trivia = (await tree.GetRootAsync(ct))
+                .DescendantTrivia()
+                .SingleOrDefault(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) && t.GetLocation() == diagnostic.Location);
 
-            var trivia = (await tree.GetRootAsync(ct)).DescendantTrivia(x =>
-                x.IsKind(SyntaxKind.SingleLineCommentTrivia) && x.GetLocation() == diagnosticSpan).SingleOrDefault();
+            if (trivia == new SyntaxTrivia())
+            {
+                return null;
+            }
 
-            return trivia;
+            var node = (await tree.GetRootAsync(ct))
+                .DescendantNodes()
+                .SingleOrDefault(n => n.GetLeadingTrivia().Contains(trivia));
+
+            if (node == null)
+            {
+                return null;
+            }
+
+            return (node, trivia);
         }
 
-        private async Task<Document> UncommentAsync(Document document, SyntaxTrivia location, CancellationToken cancellationToken)
+        private async Task<Document> UncommentAsync(Document document, SyntaxNode node, SyntaxTrivia trivia, CancellationToken ct)
         {
-            /*
-            var semanticModel = await document.GetSyntaxTreeAsync(cancellationToken);
-
-            // Compute new uppercase name.
-            var identifierToken = trivia.Span.ToString();
-            var newLine = identifierToken.TrimStart('/').TrimStart();
-
-            // Get the symbol representing the type to be renamed.
+            // Produce a new solution
+            var oldRoot = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
             
-            var typeSymbol = semanticModel.Get
-            semanticModel.
-            */
-            // Produce a new solution that has all references to that type renamed, including the declaration.
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            //SyntaxNode newRoot = oldRoot.ReplaceNode(typeDecl, typeDecl);
+            var authNode = SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("Authorize"));
 
-            return document.WithSyntaxRoot(oldRoot);
+            var gen = SyntaxGenerator.GetGenerator(document);
 
+            var leadingTrivia = node.GetLeadingTrivia();
+
+            var newLeadingTrivia = leadingTrivia.Remove(trivia).NormalizeWhitespace();
+
+            var newNode = gen.InsertAttributes(node, 0, authNode)
+                .WithoutLeadingTrivia().WithLeadingTrivia(newLeadingTrivia);
+
+            var newRoot = gen.ReplaceNode(oldRoot, node, newNode);
+            
+            return document.WithSyntaxRoot(newRoot);
         }
     }
 }

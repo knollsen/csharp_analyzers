@@ -1,7 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = AuthorizeAnalyzer.Test.CSharpCodeFixVerifier<
-    AuthorizeAnalyzer.AuthorizeAnalyzerAnalyzer,
+    AuthorizeAnalyzer.AuthorizeAnalyzer,
     AuthorizeAnalyzer.AuthorizeAnalyzerCodeFixProvider>;
 
 namespace AuthorizeAnalyzer.Test
@@ -9,52 +11,123 @@ namespace AuthorizeAnalyzer.Test
     [TestClass]
     public class AuthorizeAnalyzerUnitTest
     {
-        //No diagnostics expected to show up
         [TestMethod]
-        public async Task TestMethod1()
+        public async Task EmptySnippetShowsNoDiagnostic()
         {
             var test = @"";
 
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
-
-        //Diagnostic and CodeFix both triggered and checked for
+        
         [TestMethod]
-        public async Task TestMethod2()
+        public async Task UncommentedAuthorizeAttributeShowsDiagnostic()
         {
             var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
-    namespace ConsoleApplication1
-    {
-        // [Authorize]
-        class {|#0:TypeName|}
-        {   
+namespace ConsoleApplication1
+{
+    // [Authorize]
+    class Test
+    {   
+    }
+}";
+            
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(11, 5, 11, 19);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
-    }";
 
-            var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+        [TestMethod]
+        public async Task CodeFixUncommentsAuthorizeAttribute()
+        {
+            var test = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
-    namespace ConsoleApplication1
-    {
-        class TYPENAME
-        {   
+namespace ConsoleApplication1
+{
+    // this is a comment
+    // [Authorize]
+    class Test
+    {   
+    }
+
+    class AuthorizeAttribute : Attribute {}
+}";
+            var fix = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    // this is a comment
+    [Authorize]
+    class Test
+    {   
+    }
+
+    class AuthorizeAttribute : Attribute {}
+}";
+
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(12, 5, 12, 19);
+            await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
         }
-    }";
 
-            var expected = VerifyCS.Diagnostic("AuthorizeAnalyzer").WithLocation(0).WithArguments("TypeName");
-            await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
+        [TestMethod]
+        public async Task CodeFixRemovesCorrectComment()
+        {
+            var test = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    // [Authorize]
+    // this is a comment
+    class Test
+    {   
+    }
+
+    class AuthorizeAttribute : Attribute {}
+}";
+            var fix = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    // this is a comment
+    [Authorize]
+    class Test
+    {   
+    }
+
+    class AuthorizeAttribute : Attribute {}
+}";
+
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(11, 5, 11, 19);
+            await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
         }
     }
 }
