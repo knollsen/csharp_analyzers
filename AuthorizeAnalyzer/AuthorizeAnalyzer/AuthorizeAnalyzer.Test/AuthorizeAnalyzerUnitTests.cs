@@ -24,11 +24,6 @@ namespace AuthorizeAnalyzer.Test
         {
             var test = @"
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace ConsoleApplication1
 {
@@ -38,7 +33,7 @@ namespace ConsoleApplication1
     }
 }";
             
-            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(11, 5, 11, 19);
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(6, 5, 6, 19);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -47,11 +42,6 @@ namespace ConsoleApplication1
         {
             var test = @"
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace ConsoleApplication1
 {
@@ -65,11 +55,6 @@ namespace ConsoleApplication1
 }";
             var fix = @"
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace ConsoleApplication1
 {
@@ -82,7 +67,7 @@ namespace ConsoleApplication1
     class AuthorizeAttribute : Attribute {}
 }";
 
-            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(12, 5, 12, 19);
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(7, 5, 7, 19);
             await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
         }
 
@@ -91,11 +76,6 @@ namespace ConsoleApplication1
         {
             var test = @"
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace ConsoleApplication1
 {
@@ -109,11 +89,6 @@ namespace ConsoleApplication1
 }";
             var fix = @"
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace ConsoleApplication1
 {
@@ -126,7 +101,7 @@ namespace ConsoleApplication1
     class AuthorizeAttribute : Attribute {}
 }";
 
-            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(11, 5, 11, 19);
+            var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(6, 5, 6, 19);
             await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
         }
     }
