@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <PackageId>AuthorizeAnalyzer</PackageId>
-    <PackageVersion>1.1.0</PackageVersion>
+    <PackageVersion>1.4.0</PackageVersion>
     <Authors>Robin Knoll</Authors>
     <PackageLicenseUrl>https://github.com/knollsen/csharp_analyzers/blob/main/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/knollsen/csharp_analyzers/tree/main/AuthorizeAnalyzer</PackageProjectUrl>
@@ -18,7 +18,8 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>AuthorizeAnalyzer</Description>
     <PackageReleaseNotes>
-        1.1.0: Refined analyzer, added code fix
+	    1.4.0: Fixed bug where code fix would not work if comment was in wrong place
+	    1.1.0: Refined analyzer, added code fix
 	    1.0.0: Implemented first version of analyzer
     </PackageReleaseNotes>
     <Copyright>Copyright</Copyright>

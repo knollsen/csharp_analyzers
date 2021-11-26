@@ -60,9 +60,28 @@ namespace AuthorizeAnalyzer
                 return null;
             }
 
-            var node = (await tree.GetRootAsync(ct))
-                .DescendantNodes()
-                .SingleOrDefault(n => n.GetLeadingTrivia().Contains(trivia));
+            var syntaxNodes = (await tree.GetRootAsync(ct)).DescendantNodesAndSelf();
+
+            var node = syntaxNodes
+                .SingleOrDefault(n =>
+                {
+                    if (!(n is ClassDeclarationSyntax || n is MethodDeclarationSyntax))
+                    {
+                        return false;
+                    }
+
+                    if (n.GetLeadingTrivia().Contains(trivia))
+                    {
+                        return true;
+                    }
+
+                    if (n.ChildTokens().Any(x => x.LeadingTrivia.Contains(trivia)))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                });
 
             if (node == null)
             {
@@ -74,22 +93,37 @@ namespace AuthorizeAnalyzer
 
         private async Task<Document> UncommentAsync(Document document, SyntaxNode node, SyntaxTrivia trivia, CancellationToken ct)
         {
-            // Produce a new solution
-            var oldRoot = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-            
-            var authNode = SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("Authorize"));
+            var nodeLeadingTrivia = node.GetLeadingTrivia();
+
+            SyntaxNode nodeWithCommentRemoved;
+            if (nodeLeadingTrivia.Contains(trivia))
+            {
+                var newLeadingTrivia = nodeLeadingTrivia.Remove(trivia).NormalizeWhitespace();
+
+                nodeWithCommentRemoved = node.WithLeadingTrivia(newLeadingTrivia);
+            }
+            else
+            {
+                var token = node.ChildTokens().SingleOrDefault(x => x.LeadingTrivia.Contains(trivia));
+                
+                var tokenLeadingTrivia = token.LeadingTrivia;
+                var tokenLeadingTriviaWithoutComment = tokenLeadingTrivia.Remove(trivia);
+
+                var newToken = token.WithLeadingTrivia(tokenLeadingTriviaWithoutComment);
+
+                nodeWithCommentRemoved = node.ReplaceToken(token, newToken);
+            }
 
             var gen = SyntaxGenerator.GetGenerator(document);
 
-            var leadingTrivia = node.GetLeadingTrivia();
+            var authNode = SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("Authorize"));
 
-            var newLeadingTrivia = leadingTrivia.Remove(trivia).NormalizeWhitespace();
+            var finalNode = gen.InsertAttributes(nodeWithCommentRemoved, 0, authNode);
 
-            var newNode = gen.InsertAttributes(node, 0, authNode)
-                .WithoutLeadingTrivia().WithLeadingTrivia(newLeadingTrivia);
+            var oldRoot = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
 
-            var newRoot = gen.ReplaceNode(oldRoot, node, newNode);
-            
+            var newRoot = gen.ReplaceNode(oldRoot, node, finalNode);
+
             return document.WithSyntaxRoot(newRoot);
         }
     }

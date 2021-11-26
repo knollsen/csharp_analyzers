@@ -70,7 +70,7 @@ namespace AuthorizeAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [Authorize] is commented out..
+        ///   Looks up a localized string similar to [Authorize] is commented out.
         /// </summary>
         internal static string AnalyzerMessageFormat {
             get {
@@ -79,7 +79,7 @@ namespace AuthorizeAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [Authorize] is commented out..
+        ///   Looks up a localized string similar to [Authorize] is commented out.
         /// </summary>
         internal static string AnalyzerTitle {
             get {

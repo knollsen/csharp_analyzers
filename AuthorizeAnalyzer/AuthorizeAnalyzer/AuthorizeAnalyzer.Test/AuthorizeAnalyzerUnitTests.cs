@@ -104,5 +104,142 @@ namespace ConsoleApplication1
             var expected = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(6, 5, 6, 19);
             await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
         }
+
+        [TestMethod]
+        public async Task AttributesCanBeAboveDeclaration()
+        {
+            var code = @"
+using System;
+
+namespace Weather.Controllers
+{
+    [ApiController]
+    [Route(""[controller]"")]
+    // [Authorize]
+    public class WeatherForecastController : Controller { }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+}
+";
+            var fix = @"
+using System;
+
+namespace Weather.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route(""[controller]"")]
+    
+    public class WeatherForecastController : Controller { }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+}
+";
+            var diag = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(8, 5, 8, 19);
+            await VerifyCS.VerifyCodeFixAsync(code, diag, fix);
+        }
+
+        [TestMethod]
+        public async Task CodeFixWorksWithMultipleAttributes()
+        {
+            var code = @"
+using System;
+
+namespace Weather.Controllers
+{
+    // [Authorize]
+    [ApiController]
+    [Route(""[controller]"")]
+    public class WeatherForecastController : Controller { }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+}
+";
+            var fix = @"
+using System;
+
+namespace Weather.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route(""[controller]"")]
+    public class WeatherForecastController : Controller { }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+}
+";
+            var diag = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(6, 5, 6, 19);
+            await VerifyCS.VerifyCodeFixAsync(code, diag, fix);
+        }
+
+        [TestMethod]
+        public async Task CodeFixWorksForMethods()
+        {
+            var code = @"
+using System;
+
+namespace Weather.Controllers
+{
+    // [Authorize]
+    [ApiController]
+    [Route(""[controller]"")]
+    public class WeatherForecastController : Controller 
+    {
+        // [Authorize]
+        [HttpGet]
+        public string GetString()
+        {
+            return ""Success"";
+        }
+    }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+    class HttpGetAttribute : Attribute { }
+}
+";
+            var fix = @"
+using System;
+
+namespace Weather.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route(""[controller]"")]
+    public class WeatherForecastController : Controller 
+    {
+        [Authorize]
+        [HttpGet]
+        public string GetString()
+        {
+            return ""Success"";
+        }
+    }
+
+    public interface Controller { }
+    class AuthorizeAttribute : Attribute { }
+    class ApiControllerAttribute : Attribute { }
+    class RouteAttribute : Attribute { public RouteAttribute(string route) { } }
+    class HttpGetAttribute : Attribute { }
+}
+";
+            var classDeclarationDiag = VerifyCS.Diagnostic(AuthorizeAnalyzer.DiagnosticId).WithSpan(6, 5, 6, 19);
+            var methodDecarationDiag = VerifyCS.Diagnostic().WithSpan(11, 9, 11, 23);
+            await VerifyCS.VerifyCodeFixAsync(code, new[] {classDeclarationDiag, methodDecarationDiag }, fix);
+        }
     }
 }
