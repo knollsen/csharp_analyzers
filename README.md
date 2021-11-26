@@ -1,3 +1,3 @@
 # Introduction
 
-This repository contains some code analyzers implemented using the Roslyn compiler API. 
+This repository contains some C# code analyzers implemented using the Roslyn compiler API. 
