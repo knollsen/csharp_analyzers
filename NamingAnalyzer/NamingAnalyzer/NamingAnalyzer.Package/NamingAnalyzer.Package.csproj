@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>NamingAnalyzer</PackageId>
+    <PackageVersion>1.0.13</PackageVersion>
+    <Authors>Robin</Authors>
+    <PackageLicenseUrl>https://github.com/knollsen/csharp_analyzers/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/knollsen/csharp_analyzers/tree/main/NamingAnalyzer</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <RepositoryUrl>https://github.com/knollsen/csharp_analyzers/</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>NamingAnalyzer</Description>
+    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
+    <Copyright>Copyright</Copyright>
+    <PackageTags>NamingAnalyzer, analyzers</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NamingAnalyzer\NamingAnalyzer.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="namingConfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="All" IncludeInPackage="true" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+	<Target Name="_AddAnalyzersToOutput">
+		<ItemGroup>
+			<TfmSpecificPackageFile Include="$(OutputPath)\NamingAnalyzer.dll" PackagePath="analyzers/dotnet/cs" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="AddNuGetDlls" BeforeTargets="_GetPackageFiles">
+		<!-- Merge the collection of PackageReference and Assemblies using the NuGetPackageId key.
+           This produces a new list containing the DLL path and the "IncludeInPackage" metadata-->
+		<JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*"
+		           Right="@(PackageReference)" RightKey="" RightMetadata="*"
+		           ItemSpecToUse="Left">
+			<Output TaskParameter="JoinResult" ItemName="_PackagesToPack" />
+		</JoinItems>
+
+		<ItemGroup>
+			<!-- Remove NETStandard DLLs -->
+			<_PackagesToPack Remove="@(_PackagesToPack)" Condition="%(NuGetPackageId) == 'NETStandard.Library'" />
+		</ItemGroup>
+
+		<Message Importance="High" Text="Adding DLLs from the following packages: @(_PackagesToPack->'%(NuGetPackageId)')" />
+
+		<ItemGroup>
+			<!-- Update the collection of items to pack with the DLLs from the NuGet packages -->
+			<None Include="@(_PackagesToPack)"
+			      Pack="true"
+			      PackagePath="analyzers/dotnet/cs"
+			      Visible="false" />
+
+			<!-- Add the DLL produced by the current project to the NuGet package -->
+			<None Include="$(OutputPath)\$(AssemblyName).dll"
+			      Pack="true"
+			      PackagePath="analyzers/dotnet/cs"
+			      Visible="false" />
+		</ItemGroup>
+	</Target>
+
+</Project>

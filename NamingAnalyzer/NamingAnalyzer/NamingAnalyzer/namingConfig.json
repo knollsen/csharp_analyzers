@@ -1,0 +1,9 @@
+{
+  "DisallowedTermsInClassNames": [ "Class" ],
+  "DisallowedSuffixesInMembersType": [
+    {
+      "ClassSuffix": "Factory",
+      "DisallowedMemberSuffixes": [ "Repository" ]
+    }
+  ]
+}
