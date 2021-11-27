@@ -21,81 +21,90 @@ namespace ExceptionAnalyzer.Test
         }
 
         [TestMethod]
-        public async Task Test()
-        {
-            var test = @"using System;
-
-namespace AnalyzerTestApplication
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine(""Hello World!""); 
-            var x = Ret();
-            try {
-                Throws();
-            }
-            catch (Exception) {}
-            // var c = new Class1();
-        }
-
-        /// <summary>
-        /// Method that throws exceptions.
-        /// </summary>
-        /// <exception cref=""ArgumentException"">In case of failure.</exception>
-        private static void Throws()
-        {
-            throw new ArgumentException(""Failure"");
-        }
-
-        /// <summary> returns 1</summary>
-        public static int Ret()
-        {
-            return 1;
-        }
-    }
-}
-";
-            await VerifyCS.VerifyAnalyzerAsync(test, DiagnosticResult.CompilerWarning("ExceptionAnalyzer_MissingXmlDocumentation").WithSpan(7, 21, 7, 25).WithArguments("Main"));
-        }
-
-        //Diagnostic and CodeFix both triggered and checked for
-        [TestMethod]
-        public async Task TestMethod2()
+        public async Task Test2()
         {
             var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+using System;
 
-    namespace ConsoleApplication1
+public class SomeClass
+{
+    public void Execute()
     {
-        class {|#0:TypeName|}
-        {   
-        }
-    }";
+        this.ThrowsException();
+    }
 
-            var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    private void ThrowsException()
     {
-        class TYPENAME
-        {   
+        throw new ArgumentException();
+    }
+}";
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(8, 9, 8, 31);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
-    }";
 
-            var expected = VerifyCS.Diagnostic("ExceptionAnalyzer").WithLocation(0).WithArguments("TypeName");
-            await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
+        [TestMethod]
+        public async Task Test3()
+        {
+            var test = @"
+using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        try
+        {
+            this.ThrowsException();
+        }
+        catch (InvalidOperationException) {}
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    private void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 13, 10, 35);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+
+        [TestMethod]
+        public async Task Test4()
+        {
+            var test = @"
+using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        try
+        {
+            ThrowsException();
+        }
+        catch (InvalidOperationException) {}
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 13, 10, 30);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
     }
+
 }

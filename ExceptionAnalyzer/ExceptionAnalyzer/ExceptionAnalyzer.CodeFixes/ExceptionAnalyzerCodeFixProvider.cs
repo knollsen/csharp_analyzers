@@ -15,13 +15,10 @@ using System.Threading.Tasks;
 
 namespace ExceptionAnalyzer
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ExceptionAnalyzerCodeFixProvider)), Shared]
+    //[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ExceptionAnalyzerCodeFixProvider)), Shared]
     public class ExceptionAnalyzerCodeFixProvider : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds
-        {
-            get { return ImmutableArray.Create(ExceptionAnalyzer.UncommentedExceptionId); }
-        }
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

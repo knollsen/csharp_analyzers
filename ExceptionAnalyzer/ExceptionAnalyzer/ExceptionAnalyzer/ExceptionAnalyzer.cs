@@ -17,12 +17,13 @@ namespace ExceptionAnalyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ExceptionAnalyzer : DiagnosticAnalyzer
     {
+        private const string Category = "Exceptions";
+        /*
         public const string UncommentedExceptionId = "ExceptionAnalyzer_UncommentedException";
 
         private static readonly LocalizableString UncommentedExceptionTitle = new LocalizableResourceString(nameof(Resources.UncommentedExceptionTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString UncommentedExceptionMessageFormat = new LocalizableResourceString(nameof(Resources.UncommentedExcetionMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString UncommentedExceptionDescription = new LocalizableResourceString(nameof(Resources.UncommentedExceptionDescription), Resources.ResourceManager,  typeof(Resources));
-        private const string Category = "Exceptions";
 
         private static readonly DiagnosticDescriptor UncommentedExceptionFoundRule = new DiagnosticDescriptor(UncommentedExceptionId, UncommentedExceptionTitle, UncommentedExceptionMessageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: UncommentedExceptionDescription);
 
@@ -33,7 +34,7 @@ namespace ExceptionAnalyzer
         private static readonly LocalizableString MissingXmlDocumentationDescription = new LocalizableResourceString(nameof(Resources.MissingXmlCommentDescription), Resources.ResourceManager, typeof(Resources));
 
         private static readonly DiagnosticDescriptor MissingXmlDocumentationRule = new DiagnosticDescriptor(MissingXmlDocumentationId, MissingXmlDocumentationTitle, MissingXmlDocumentationMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: false, description: MissingXmlDocumentationDescription);
-
+        */
 
         public const string DiagnosticId = "ExceptionAnalyzer_DocumentedExceptionNotCaught";
 
@@ -43,7 +44,8 @@ namespace ExceptionAnalyzer
 
         private static readonly DiagnosticDescriptor ReferenceRule = new DiagnosticDescriptor(DiagnosticId, ReferenceTitle, ReferenceMessageFormat, Category, DiagnosticSeverity.Error, true, ReferenceDescription);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UncommentedExceptionFoundRule, MissingXmlDocumentationRule, ReferenceRule);
+        // UncommentedExceptionFoundRule, MissingXmlDocumentationRule,
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ReferenceRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -51,7 +53,7 @@ namespace ExceptionAnalyzer
             context.EnableConcurrentExecution();
             
             // method definition should document thrown exceptions
-            context.RegisterSymbolAction(AnalyzeMethodDefinition, SymbolKind.Method);
+            //context.RegisterSymbolAction(AnalyzeMethodDefinition, SymbolKind.Method);
             // method invocation should catch documented exceptions
             context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
         }
@@ -59,62 +61,63 @@ namespace ExceptionAnalyzer
         private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
         {
             var invocation = (InvocationExpressionSyntax)context.Node;
-            /*
-            if (invocation.Expression is MemberAccessExpressionSyntax methodInvocation)
-            {
-                var semanticModel = context.SemanticModel;
-                var method = semanticModel.GetSymbolInfo(methodInvocation);
-                var symbol = method.Symbol;
+            var semanticModel = context.SemanticModel;
 
-                var documentation = symbol?.GetDocumentationCommentXml();
+            var method = semanticModel.GetSymbolInfo(invocation.Expression);
+
+            if (method.Equals(new SymbolInfo()))
+            {
+                return;
             }
-            */
-            if (invocation.Expression is IdentifierNameSyntax node )
+
+            var documentation = method.Symbol?.GetDocumentationCommentXml();
+
+            if (string.IsNullOrEmpty(documentation))
             {
-                var semanticModel = context.SemanticModel;
-                var method = semanticModel.GetSymbolInfo(node);
+                return;
+            }
+            
+            var documentedExceptions = GetExceptionsFromXmlComment(documentation).ToList();
 
-                var documentation = method.Symbol?.GetDocumentationCommentXml();
+            if (!documentedExceptions.Any())
+            {
+                return;
+            }
+            
+            var tryCatch = (TryStatementSyntax)invocation.FirstAncestorOrSelf<SyntaxNode>(n => n.IsKind(SyntaxKind.TryStatement));
+            var caughtExceptions = tryCatch?.Catches.Select(x => x.Declaration.Type).ToList();
 
-                if (!string.IsNullOrEmpty(documentation))
+            foreach (var documentedException in documentedExceptions)
+            {
+                var documentedExceptionSymbol = context.Compilation.GetTypeByMetadataName(documentedException);
+
+                if (documentedExceptionSymbol == null)
                 {
-                    var documentedExceptions = GetExceptionsFromXmlComment(documentation).ToList();
-
-                    if (documentedExceptions.Any())
+                    continue;
+                }
+                
+                var caught = false;
+                // check if documentedException inherits from any caughtException
+                foreach (var caughtException in caughtExceptions ?? new List<TypeSyntax>())
+                {
+                    var caughtSymbolTypeInfo = semanticModel.GetTypeInfo(caughtException);
+                    var caughtSymbol = context.Compilation.GetTypeByMetadataName(caughtSymbolTypeInfo.ConvertedType.ToString());
+                    if (caughtSymbol != null && InheritsFrom(documentedExceptionSymbol, caughtSymbol))
                     {
-                        var tryCatch = (TryStatementSyntax)invocation.FirstAncestorOrSelf<SyntaxNode>(predicate: (n) => n.IsKind(SyntaxKind.TryStatement));
-                        var caughtExceptions = tryCatch.Catches.Select(x => x.Declaration.Type).ToList();
-                        
-                        foreach (var documentedException in documentedExceptions)
-                        {
-                            var exceptionType = context.Compilation.GetTypeByMetadataName(documentedException);
-
-                            if (exceptionType != null)
-                            {
-                                var caught = false;
-                                // check if documentedException inherits from any caughtException
-                                foreach (var caughtException in caughtExceptions)
-                                {
-                                    var caughtSymbolTypeInfo = semanticModel.GetTypeInfo(caughtException);
-                                    var caughtSymbol = context.Compilation.GetTypeByMetadataName(caughtSymbolTypeInfo.ConvertedType.ToString());
-                                    if (caughtSymbol != null && InheritsFrom(exceptionType, caughtSymbol))
-                                    {
-                                        caught = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!caught)
-                                {
-                                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation()));
-                                }
-                            }
-                        }
+                        caught = true;
+                        break;
                     }
+                }
+
+                if (!caught)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation()));
                 }
             }
         }
 
+
+        /*
         private static void AnalyzeMethodDefinition(SymbolAnalysisContext context)
         {
             var method = (IMethodSymbol)context.Symbol;
@@ -163,7 +166,7 @@ namespace ExceptionAnalyzer
                 }
             }
         }
-
+        */
         private static IEnumerable<string> GetExceptionsFromXmlComment(string xmlComment)
         {
             var doc = new XmlDocument();
