@@ -9,15 +9,17 @@
 
   <PropertyGroup>
     <PackageId>NamingAnalyzer</PackageId>
-    <PackageVersion>1.0.13</PackageVersion>
-    <Authors>Robin</Authors>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Robin Knoll</Authors>
     <PackageLicenseUrl>https://github.com/knollsen/csharp_analyzers/blob/main/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/knollsen/csharp_analyzers/tree/main/NamingAnalyzer</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/knollsen/csharp_analyzers/</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>NamingAnalyzer</Description>
-    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+	    1.0.0: Implemented first version of analyzer
+	</PackageReleaseNotes>
     <Copyright>Copyright</Copyright>
     <PackageTags>NamingAnalyzer, analyzers</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
