@@ -18,31 +18,15 @@ namespace ExceptionAnalyzer
     public class ExceptionAnalyzer : DiagnosticAnalyzer
     {
         private const string Category = "Exceptions";
-        /*
-        public const string UncommentedExceptionId = "ExceptionAnalyzer_UncommentedException";
-
-        private static readonly LocalizableString UncommentedExceptionTitle = new LocalizableResourceString(nameof(Resources.UncommentedExceptionTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString UncommentedExceptionMessageFormat = new LocalizableResourceString(nameof(Resources.UncommentedExcetionMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString UncommentedExceptionDescription = new LocalizableResourceString(nameof(Resources.UncommentedExceptionDescription), Resources.ResourceManager,  typeof(Resources));
-
-        private static readonly DiagnosticDescriptor UncommentedExceptionFoundRule = new DiagnosticDescriptor(UncommentedExceptionId, UncommentedExceptionTitle, UncommentedExceptionMessageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: UncommentedExceptionDescription);
-
-        public const string MissingXmlDocumentationId = "ExceptionAnalyzer_MissingXmlDocumentation";
-
-        private static readonly LocalizableString MissingXmlDocumentationTitle = new LocalizableResourceString(nameof(Resources.MissingXmlCommentTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MissingXmlDocumentationMessageFormat = new LocalizableResourceString(nameof(Resources.MissingXmlCommentMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MissingXmlDocumentationDescription = new LocalizableResourceString(nameof(Resources.MissingXmlCommentDescription), Resources.ResourceManager, typeof(Resources));
-
-        private static readonly DiagnosticDescriptor MissingXmlDocumentationRule = new DiagnosticDescriptor(MissingXmlDocumentationId, MissingXmlDocumentationTitle, MissingXmlDocumentationMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: false, description: MissingXmlDocumentationDescription);
-        */
 
         public const string DiagnosticId = "ExceptionAnalyzer_DocumentedExceptionNotCaught";
+        public const string PropertiesExceptionTypeKey = "exceptionType";
 
         private static readonly LocalizableString ReferenceTitle = new LocalizableResourceString(nameof(Resources.ReferenceTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString ReferenceMessageFormat = new LocalizableResourceString(nameof(Resources.ReferenceMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString ReferenceDescription = new LocalizableResourceString(nameof(Resources.ReferenceDescription), Resources.ResourceManager, typeof(Resources));
 
-        private static readonly DiagnosticDescriptor ReferenceRule = new DiagnosticDescriptor(DiagnosticId, ReferenceTitle, ReferenceMessageFormat, Category, DiagnosticSeverity.Error, true, ReferenceDescription);
+        private static readonly DiagnosticDescriptor ReferenceRule = new DiagnosticDescriptor(DiagnosticId, ReferenceTitle, ReferenceMessageFormat, Category, DiagnosticSeverity.Error, true, ReferenceDescription, customTags:"exceptionName");
 
         // UncommentedExceptionFoundRule, MissingXmlDocumentationRule,
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ReferenceRule);
@@ -52,8 +36,6 @@ namespace ExceptionAnalyzer
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
             
-            // method definition should document thrown exceptions
-            //context.RegisterSymbolAction(AnalyzeMethodDefinition, SymbolKind.Method);
             // method invocation should catch documented exceptions
             context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
         }
@@ -111,62 +93,14 @@ namespace ExceptionAnalyzer
 
                 if (!caught)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation()));
+                    // give documented exception type as property
+                    var properties = new Dictionary<string, string> { { PropertiesExceptionTypeKey, documentedException } }.ToImmutableDictionary();
+
+                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation(), properties));
                 }
             }
         }
 
-
-        /*
-        private static void AnalyzeMethodDefinition(SymbolAnalysisContext context)
-        {
-            var method = (IMethodSymbol)context.Symbol;
-
-            var reference = method.DeclaringSyntaxReferences.SingleOrDefault();
-            
-            var throws = reference?.GetSyntax()?.DescendantNodes()?.Where(x => x.IsKind(SyntaxKind.ThrowStatement));
-
-            var thrownExceptions = new List<TypeSyntax>();
-            if (throws != null)
-            {
-                foreach (var throwStatement in throws)
-                {
-                    var statement = (ThrowStatementSyntax)throwStatement;
-
-                    var creation = (ObjectCreationExpressionSyntax)statement.ChildNodes().SingleOrDefault(x => x.IsKind(SyntaxKind.ObjectCreationExpression));
-                    var exceptionType = creation?.Type;
-
-                    if (exceptionType != null)
-                    {
-                        thrownExceptions.Add(exceptionType);
-                    }
-                }
-            }
-            
-            var xmlComment = method.GetDocumentationCommentXml();
-
-            if (string.IsNullOrEmpty(xmlComment))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(MissingXmlDocumentationRule, context.Symbol.Locations.First(), method.Name));
-            }
-            else
-            {
-                var documentedExceptions = GetExceptionsFromXmlComment(xmlComment);
-
-                foreach (var documentedException in documentedExceptions)
-                {
-                    var match = thrownExceptions.SingleOrDefault(x => documentedException.EndsWith(x.ToFullString()));
-
-                    thrownExceptions.Remove(match);
-                }
-
-                foreach (var uncommentedException in thrownExceptions)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(UncommentedExceptionFoundRule, uncommentedException.GetLocation(), method.Name));
-                }
-            }
-        }
-        */
         private static IEnumerable<string> GetExceptionsFromXmlComment(string xmlComment)
         {
             var doc = new XmlDocument();
@@ -190,13 +124,15 @@ namespace ExceptionAnalyzer
             return result;
         }
 
-        private static bool InheritsFrom(INamedTypeSymbol symbol, ITypeSymbol type)
+        private static bool InheritsFrom(INamedTypeSymbol symbol, INamedTypeSymbol type)
         {
-            var baseType = symbol.BaseType;
+            var baseType = symbol;
             while (baseType != null)
             {
-                if (type.Equals(baseType))
+                if (SymbolEqualityComparer.Default.Equals(type, baseType))
+                {
                     return true;
+                }
 
                 baseType = baseType.BaseType;
             }
