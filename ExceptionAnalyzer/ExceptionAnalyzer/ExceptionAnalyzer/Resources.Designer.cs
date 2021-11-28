@@ -88,7 +88,7 @@ namespace ExceptionAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Method call should catch documented exceptions..
         /// </summary>
         internal static string ReferenceDescription {
             get {
@@ -97,7 +97,7 @@ namespace ExceptionAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Method call &apos;{0}&apos; should catch &apos;{1}&apos;.
         /// </summary>
         internal static string ReferenceMessageFormat {
             get {
@@ -106,7 +106,7 @@ namespace ExceptionAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Method call does not catch documented exception..
         /// </summary>
         internal static string ReferenceTitle {
             get {

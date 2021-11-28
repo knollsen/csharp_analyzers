@@ -26,7 +26,7 @@ namespace ExceptionAnalyzer
         private static readonly LocalizableString ReferenceMessageFormat = new LocalizableResourceString(nameof(Resources.ReferenceMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString ReferenceDescription = new LocalizableResourceString(nameof(Resources.ReferenceDescription), Resources.ResourceManager, typeof(Resources));
 
-        private static readonly DiagnosticDescriptor ReferenceRule = new DiagnosticDescriptor(DiagnosticId, ReferenceTitle, ReferenceMessageFormat, Category, DiagnosticSeverity.Error, true, ReferenceDescription, customTags:"exceptionName");
+        private static readonly DiagnosticDescriptor ReferenceRule = new DiagnosticDescriptor(DiagnosticId, ReferenceTitle, ReferenceMessageFormat, Category, DiagnosticSeverity.Warning, true, ReferenceDescription, customTags:"exceptionName");
 
         // UncommentedExceptionFoundRule, MissingXmlDocumentationRule,
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ReferenceRule);
@@ -96,7 +96,7 @@ namespace ExceptionAnalyzer
                     // give documented exception type as property
                     var properties = new Dictionary<string, string> { { PropertiesExceptionTypeKey, documentedException } }.ToImmutableDictionary();
 
-                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation(), properties));
+                    context.ReportDiagnostic(Diagnostic.Create(ReferenceRule, invocation.GetLocation(), properties, invocation.ToString(), documentedException));
                 }
             }
         }

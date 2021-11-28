@@ -127,13 +127,13 @@
     <value>Method has no XML documentation</value>
   </data>
   <data name="ReferenceDescription" xml:space="preserve">
-    <value />
+    <value>Method call should catch documented exceptions.</value>
   </data>
   <data name="ReferenceMessageFormat" xml:space="preserve">
-    <value />
+    <value>Method call '{0}' should catch '{1}'</value>
   </data>
   <data name="ReferenceTitle" xml:space="preserve">
-    <value />
+    <value>Method call does not catch documented exception.</value>
   </data>
   <data name="UncommentedExceptionDescription" xml:space="preserve">
     <value>Thrown exceptions need to be documented.</value>
