@@ -138,24 +138,28 @@ namespace NamingAnalyzer
                     {
                         if (member is PropertyDeclarationSyntax propertyDeclaration)
                         {
-                            var disallowedSuffix = config.DisallowedMemberSuffixes.FirstOrDefault(x => propertyDeclaration.Type.ToString().EndsWith(x));
+                            var disallowedSuffix =
+                                config.DisallowedMemberSuffixes.FirstOrDefault(x =>
+                                    propertyDeclaration.Type.ToString().EndsWith(x));
                             if (disallowedSuffix != null)
                             {
-                                context.ReportDiagnostic(Diagnostic.Create(DisallowedSuffixRule, member.GetLocation(), namedType.Name, disallowedSuffix));
+                                context.ReportDiagnostic(Diagnostic.Create(DisallowedSuffixRule, member.GetLocation(),
+                                    namedType.Name, disallowedSuffix));
                             }
                         }
 
                         if (member is FieldDeclarationSyntax fieldDeclaration)
                         {
-                            var disallowedSuffix = config.DisallowedMemberSuffixes.FirstOrDefault(x => fieldDeclaration.Declaration.Type.ToString().EndsWith(x));
+                            var disallowedSuffix = config.DisallowedMemberSuffixes.FirstOrDefault(x =>
+                                fieldDeclaration.Declaration.Type.ToString().EndsWith(x));
                             if (disallowedSuffix != null)
                             {
-                                context.ReportDiagnostic(Diagnostic.Create(DisallowedSuffixRule, member.GetLocation(), namedType.Name, disallowedSuffix));
+                                context.ReportDiagnostic(Diagnostic.Create(DisallowedSuffixRule, member.GetLocation(),
+                                    namedType.Name, disallowedSuffix));
                             }
                         }
                     }
                 }
-                
             }
         }
     }

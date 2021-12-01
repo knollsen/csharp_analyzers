@@ -42,7 +42,9 @@ public class SomeClass
         throw new ArgumentException();
     }
 }";
-            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(8, 9, 8, 31);
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(8, 9, 8, 31)
+                .WithArguments("this.ThrowsException()", "System.ArgumentException");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -72,7 +74,9 @@ public class SomeClass
         throw new ArgumentException();
     }
 }";
-            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 13, 10, 35);
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(10, 13, 10, 35)
+                .WithArguments("this.ThrowsException()", "System.ArgumentException");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -102,7 +106,9 @@ public class SomeClass
         throw new ArgumentException();
     }
 }";
-            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 13, 10, 30);
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(10, 13, 10, 30)
+                .WithArguments("ThrowsException()", "System.ArgumentException");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -127,6 +133,31 @@ public class SomeClass
     /// Will throw an exception.
     /// </summary>
     /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(test);
+        }
+
+        [TestMethod]
+        public async Task UnknownExceptionsAreIgnored()
+        {
+            var test = @"
+using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        ThrowsException();
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""SomeNoneExistingException"">Will throw this exception.</exception>
     private static void ThrowsException()
     {
         throw new ArgumentException();
@@ -209,7 +240,9 @@ public class SomeClass
         throw new ArgumentException();
     }
 }";
-            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(7, 9, 7, 31);
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(7, 9, 7, 31)
+                .WithArguments("this.ThrowsException()", "System.ArgumentException");
             await VerifyCS.VerifyCodeFixAsync(test, expected, codeFix);
         }
 
@@ -271,8 +304,129 @@ public class SomeClass
         return 1;
     }
 }";
-            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 21, 10, 38);
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(10, 21, 10, 38)
+                .WithArguments("ThrowsException()", "System.ArgumentException");
             await VerifyCS.VerifyCodeFixAsync(test, expected, codeFix);
+        }
+
+        [TestMethod]
+        public async Task SingleMissingThrownExceptionShowsDiagnostic()
+        {
+            var test = @"
+using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        try
+        {
+            ThrowsException();
+        }
+        catch (InvalidOperationException) {}
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    /// <exception cref=""InvalidOperationException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(10, 13, 10, 30).WithArguments("ThrowsException()", "System.ArgumentException");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+
+        [TestMethod]
+        public async Task CodeFixForSingleMissingThrownExceptionsWorks()
+        {
+            var test = @"using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        try
+        {
+            ThrowsException();
+        }
+        catch (InvalidOperationException) {}
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    /// <exception cref=""InvalidOperationException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var fix = @"using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        try
+        {
+            ThrowsException();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (System.ArgumentException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref = ""ArgumentException"">Will throw this exception.</exception>
+    /// <exception cref = ""InvalidOperationException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var expected = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId)
+                .WithSpan(9, 13, 9, 30)
+                .WithArguments("ThrowsException()", "System.ArgumentException");
+            await VerifyCS.VerifyCodeFixAsync(test, expected, fix);
+        }
+
+        [TestMethod]
+        public async Task MultipleThrownExceptionsShowDiagnostics()
+        {
+            var test = @"
+using System;
+
+public class SomeClass
+{
+    public void Execute()
+    {
+        ThrowsException();
+    }
+
+    /// <summary>
+    /// Will throw an exception.
+    /// </summary>
+    /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
+    /// <exception cref=""InvalidOperationException"">Will throw this exception.</exception>
+    private static void ThrowsException()
+    {
+        throw new ArgumentException();
+    }
+}";
+            var first = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(8, 9, 8, 26).WithArguments("ThrowsException()", "System.ArgumentException");
+            var second = VerifyCS.Diagnostic(ExceptionAnalyzer.DiagnosticId).WithSpan(8, 9, 8, 26).WithArguments("ThrowsException()", "System.InvalidOperationException");
+            await VerifyCS.VerifyAnalyzerAsync(test, first, second);
         }
     }
 }
