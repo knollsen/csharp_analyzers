@@ -49,9 +49,12 @@ namespace NamingAnalyzer
         private static readonly DiagnosticDescriptor DisallowedSuffixRule = new DiagnosticDescriptor(DisallowedSuffixDiagnosticId, DisallowedSuffixTitle, DisallowedSuffixMessageFormat,
             Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: DisallowedSuffixDescription);
 
+        public const string MissingFileDiagnosticId = "NamingAnalyzerConfigMissing";
+
         private static readonly DiagnosticDescriptor MissingFileRule =
-            new DiagnosticDescriptor("NamingAnalyzerConfigMissing", "namingConfig.json missing",
+            new DiagnosticDescriptor(MissingFileDiagnosticId, "namingConfig.json missing",
                 "The file namingConfig.json could not be found or has the wrong structure", "Naming", DiagnosticSeverity.Warning, true);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DisallowedTermsRule, DisallowedSuffixRule, MissingFileRule);
 
         private NamingConfig Config = null;
@@ -94,10 +97,19 @@ namespace NamingAnalyzer
                     configContent = File.ReadAllText(configFile);
                 }
 
-                var config = JsonConvert.DeserializeObject<NamingConfig>(configContent);
+                NamingConfig config = null;
+                try
+                {
+                    config = JsonConvert.DeserializeObject<NamingConfig>(configContent);
+                }
+                catch (JsonReaderException)
+                {
+                    // ignore this exception, as it is handled below because config == null
+                }
+
 
                 // if the config file does not contain the correct structure, return as well
-                if (config == null)
+                if (config?.DisallowedSuffixesInMembersType == null || config?.DisallowedTermsInClassNames == null)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(MissingFileRule, Location.None));
                     return;

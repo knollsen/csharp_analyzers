@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer", "NamingAnalyzer\NamingAnalyzer\NamingAnalyzer.csproj", "{34D1543F-835D-422F-BC97-E05348E643D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamingAnalyzer", "NamingAnalyzer\NamingAnalyzer\NamingAnalyzer.csproj", "{34D1543F-835D-422F-BC97-E05348E643D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer.Package", "NamingAnalyzer\NamingAnalyzer.Package\NamingAnalyzer.Package.csproj", "{64C91169-BAE1-4ECB-917F-7FD76DF5CA4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamingAnalyzer.Package", "NamingAnalyzer\NamingAnalyzer.Package\NamingAnalyzer.Package.csproj", "{64C91169-BAE1-4ECB-917F-7FD76DF5CA4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer.Test", "NamingAnalyzer\NamingAnalyzer.Test\NamingAnalyzer.Test.csproj", "{A35016C5-F824-4EAD-834C-B266F645B478}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamingAnalyzer.Test", "NamingAnalyzer\NamingAnalyzer.Test\NamingAnalyzer.Test.csproj", "{A35016C5-F824-4EAD-834C-B266F645B478}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer.Vsix", "NamingAnalyzer\NamingAnalyzer.Vsix\NamingAnalyzer.Vsix.csproj", "{B302A56D-070D-49AE-B698-858B24EA29F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamingAnalyzer.Vsix", "NamingAnalyzer\NamingAnalyzer.Vsix\NamingAnalyzer.Vsix.csproj", "{B302A56D-070D-49AE-B698-858B24EA29F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer.TestEmptyConfig", "NamingAnalyzer\NamingAnalyzer.TestEmptyConfig\NamingAnalyzer.TestEmptyConfig.csproj", "{49225487-D425-4D94-A07A-8BEF834C9C1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamingAnalyzer.TestInvalidConfig", "NamingAnalyzer\NamingAnalyzer.TestInvalidConfig\NamingAnalyzer.TestInvalidConfig.csproj", "{F2BC39A5-9375-4C8B-BCAE-FF06BB80FEC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{B302A56D-070D-49AE-B698-858B24EA29F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B302A56D-070D-49AE-B698-858B24EA29F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B302A56D-070D-49AE-B698-858B24EA29F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49225487-D425-4D94-A07A-8BEF834C9C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49225487-D425-4D94-A07A-8BEF834C9C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49225487-D425-4D94-A07A-8BEF834C9C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49225487-D425-4D94-A07A-8BEF834C9C1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2BC39A5-9375-4C8B-BCAE-FF06BB80FEC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2BC39A5-9375-4C8B-BCAE-FF06BB80FEC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2BC39A5-9375-4C8B-BCAE-FF06BB80FEC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2BC39A5-9375-4C8B-BCAE-FF06BB80FEC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

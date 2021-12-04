@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace NamingAnalyzer.Test.Verifiers
+namespace NamingAnalyzer.TestInvalidConfig.Verifiers
 {
     internal static class CSharpVerifierHelper
     {

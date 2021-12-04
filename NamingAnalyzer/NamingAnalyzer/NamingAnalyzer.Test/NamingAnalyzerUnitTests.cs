@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using VerifyCS = NamingAnalyzer.Test.CSharpAnalyzerVerifier<NamingAnalyzer.NamingAnalyzer>;
+using VerifyCS = NamingAnalyzer.Test.Verifiers.CSharpAnalyzerVerifier<NamingAnalyzer.NamingAnalyzer>;
 
 namespace NamingAnalyzer.Test
 {
@@ -53,6 +53,42 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
+        public async Task DisallowedTermCanBeAtTheStart()
+        {
+            var test = @"
+using System;
+
+namespace ConsoleApplication1
+{
+    class ClassTest
+    {   
+    }
+}";
+            var expected = VerifyCS.Diagnostic(NamingAnalyzer.DisallowedTermsDiagnosticId)
+                .WithSpan(6, 11, 6, 20)
+                .WithArguments("ClassTest", "Class");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+
+        [TestMethod]
+        public async Task DisallowedTermCanBeAtInTheMiddle()
+        {
+            var test = @"
+using System;
+
+namespace ConsoleApplication1
+{
+    class SomeClassTest
+    {   
+    }
+}";
+            var expected = VerifyCS.Diagnostic(NamingAnalyzer.DisallowedTermsDiagnosticId)
+                .WithSpan(6, 11, 6, 24)
+                .WithArguments("SomeClassTest", "Class");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+
+        [TestMethod]
         public async Task DisallowedMemberSuffixesShowDiagnostic()
         {
             var test = @"
@@ -69,10 +105,10 @@ namespace ConsoleApplication1
     interface IRepository {}
 }";
             var propertyDiagnostic = VerifyCS.Diagnostic(NamingAnalyzer.DisallowedSuffixDiagnosticId)
-                .WithSpan(8, 9, 8, 49).WithArguments("TestFactory", "IRepository");
+                .WithSpan(8, 9, 8, 49).WithArguments("TestFactory", "Repository");
 
             var fieldDiagnostic = VerifyCS.Diagnostic(NamingAnalyzer.DisallowedSuffixDiagnosticId)
-                .WithSpan(9, 9, 9, 49).WithArguments("TestFactory", "IRepository");
+                .WithSpan(9, 9, 9, 49).WithArguments("TestFactory", "Repository");
 
             await VerifyCS.VerifyAnalyzerAsync(test, propertyDiagnostic, fieldDiagnostic);
         }
@@ -93,7 +129,7 @@ namespace ConsoleApplication1
     interface IRepository {}
 }";
             var fieldDiagnostic = VerifyCS.Diagnostic(NamingAnalyzer.DisallowedSuffixDiagnosticId)
-                .WithSpan(8, 9, 8, 49).WithArguments("TestFactory", "IRepository");
+                .WithSpan(8, 9, 8, 49).WithArguments("TestFactory", "Repository");
 
             await VerifyCS.VerifyAnalyzerAsync(test, fieldDiagnostic);
         }
