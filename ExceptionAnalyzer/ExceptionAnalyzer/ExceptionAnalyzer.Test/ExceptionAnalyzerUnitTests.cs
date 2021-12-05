@@ -419,7 +419,7 @@ public class SomeClass
     /// </summary>
     /// <exception cref=""ArgumentException"">Will throw this exception.</exception>
     /// <exception cref=""InvalidOperationException"">Will throw this exception.</exception>
-    private static void ThrowsException()
+    public static void ThrowsException()
     {
         throw new ArgumentException();
     }

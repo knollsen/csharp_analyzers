@@ -47,7 +47,7 @@ namespace ExceptionAnalyzer
 
             var method = semanticModel.GetSymbolInfo(invocation.Expression);
 
-            if (method.Equals(new SymbolInfo()))
+            if (method.Equals(default))
             {
                 return;
             }
